@@ -13,6 +13,8 @@ Useful docs:
 """
 
 import os
+from unittest import result
+from sympy.vector import vector
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from src.knowledge_base import build_knowledge_base
 
@@ -79,7 +81,6 @@ def ask_question(vector_store, llm, question: str) -> dict:
             "answer"  -> str: the generated answer
             "sources" -> list[str]: the chunk texts that were retrieved
     """
-    # TODO: implement this (~6-8 lines)
     # Validate user input
     if not question.strip():
         raise ValueError("Error: Input cannot be empty")
@@ -97,8 +98,8 @@ def ask_question(vector_store, llm, question: str) -> dict:
         question = question
     )
     result = llm(prompt)
-    ans = result[0]["generated_text"]
-    return {"answer": ans, "sources": sources}
+    answer = result[0]["generated_text"]
+    return {"answer": answer, "sources": sources}
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # TODO 2: Complete the interactive loop
@@ -118,8 +119,26 @@ def main():
     """
     data_dir = os.path.join(os.path.dirname(__file__), "..", "data")
 
-    # TODO: implement this (~10-12 lines)
-    raise NotImplementedError("TODO 2: Complete the interactive loop")
+    # Build knowledge base and local LLM
+    vectorstore = build_knowledge_base(data_dir)
+    llm = get_llm()
+
+    print("Marketing Agency Q&A chatbot")
+    print("Type 'quit' to exit")
+    while True:
+        question = input("> ").strip()
+        if question.lower() == 'quit':
+            break
+        try:
+            response = ask_question(vectorstore, llm, question)
+        except ValueError as error:
+            print(error)
+            continue
+
+        # Display retrieved sources and generated answer
+        for i, src in enumerate(response["sources"], start=1):
+            print(f"{i}. {src}")
+        print(f"\n Answer: {response['answer']}\n")
 
 if __name__ == "__main__":
     main()
