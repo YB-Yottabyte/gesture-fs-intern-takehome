@@ -13,10 +13,11 @@ Useful docs:
 """
 
 import os
-from unittest import result
-from sympy.vector import vector
+import argparse
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from src.knowledge_base import build_knowledge_base
+
+REQUIRED_FILES = ["services.txt", "pricing.txt", "faq.txt", "company_handbook.txt", "product_faq.txt"]
 
 # ──────────────────────────────────────────────
 # Provided: local LLM (no API key needed)
@@ -40,7 +41,6 @@ def get_llm():
         return [{"generated_text": text}]
 
     return generate
-
 
 # ──────────────────────────────────────────────
 # Provided: prompt template
@@ -81,7 +81,7 @@ def ask_question(vector_store, llm, question: str) -> dict:
             "answer"  -> str: the generated answer
             "sources" -> list[str]: the chunk texts that were retrieved
     """
-    # Validate user input
+    # Error handling for empty user input
     if not question.strip():
         raise ValueError("Error: Input cannot be empty")
 
@@ -119,9 +119,34 @@ def main():
     """
     data_dir = os.path.join(os.path.dirname(__file__), "..", "data")
 
+    # Error handling for missing data files
+    for filename in REQUIRED_FILES:
+        file_path = os.path.join(data_dir, filename)
+        if not os.path.isfile(file_path):
+            print(f"Error: Missing required file: {filename}")
+            return
+
+    # Set up --query CLI argument
+    parser = argparse.ArgumentParser(description="Marketing Agency Q&A chatbot")
+    parser.add_argument("--query", type=str, help="Ask a single question and exit")
+    args = parser.parse_args()
+
     # Build knowledge base and local LLM
     vectorstore = build_knowledge_base(data_dir)
     llm = get_llm()
+
+    # Run single-question mode
+    if args.query:
+        try:
+            response = ask_question(vectorstore, llm, args.query)
+        except ValueError as error:
+            print(error)
+            return
+        print("\n Sources:")
+        for i, src in enumerate(response["sources"], start=1):
+            print(f"{i}. {src}")
+        print(f"\n Answer: {response['answer']}\n")
+        return
 
     print("Marketing Agency Q&A chatbot")
     print("Type 'quit' to exit")
