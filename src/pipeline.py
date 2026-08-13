@@ -16,7 +16,6 @@ import os
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from src.knowledge_base import build_knowledge_base
 
-
 # ──────────────────────────────────────────────
 # Provided: local LLM (no API key needed)
 # ──────────────────────────────────────────────
@@ -81,8 +80,25 @@ def ask_question(vector_store, llm, question: str) -> dict:
             "sources" -> list[str]: the chunk texts that were retrieved
     """
     # TODO: implement this (~6-8 lines)
-    raise NotImplementedError("TODO 1: Implement ask_question")
+    # Validate user input
+    if not question.strip():
+        raise ValueError("Error: Input cannot be empty")
 
+    docs = vector_store.similarity_search(question, k=3)
+
+    sources = []
+    for doc in docs:
+        sources.append(doc.page_content)
+
+    context = "\n\n".join(sources)
+
+    prompt = PROMPT_TEMPLATE.format(
+        context = context,
+        question = question
+    )
+    result = llm(prompt)
+    ans = result[0]["generated_text"]
+    return {"answer": ans, "sources": sources}
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # TODO 2: Complete the interactive loop
@@ -104,7 +120,6 @@ def main():
 
     # TODO: implement this (~10-12 lines)
     raise NotImplementedError("TODO 2: Complete the interactive loop")
-
 
 if __name__ == "__main__":
     main()
