@@ -78,6 +78,9 @@ class TestRetrieval:
             "Different questions should retrieve different chunks"
         )
 
+    def test_three_sources(self, vector_store, llm):
+        result = ask_question(vector_store, llm, "What services do you offer?")
+        assert len(result["sources"]) == 3
 
 # ────────────────────────────────
 # Answer generation
@@ -95,3 +98,11 @@ class TestAnswerGeneration:
         assert "2,500" in answer or "2500" in answer or "starter" in answer, (
             "Answer should address the pricing question"
         )
+
+# ────────────────────────────────
+# Error handling
+# ────────────────────────────────
+class TestErrorHandling:
+    def test_empty_input(self, vector_store, llm):
+        with pytest.raises(ValueError, match="Input cannot be empty"):
+            ask_question(vector_store, llm, "  ")
