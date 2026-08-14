@@ -58,7 +58,7 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Run the tests (they will fail until you complete the TODOs):
+4. Run the tests to verify the implementation:
 
 ```bash
 pytest tests/ -v
@@ -68,15 +68,15 @@ pytest tests/ -v
 
 ---
 
-## 📝 Your Tasks
+## 📝 Implementation
 
-Open `src/pipeline.py` — there are **2 TODOs**.
+The response layer is implemented in `src/pipeline.py` with 2 main parts.
 
-The document loading, chunking, embeddings, and vector store are **already built** in `knowledge_base.py`. Don't modify that file. You're building the response layer.
+The document loading, chunking, embeddings, and vector store are **already built** in `knowledge_base.py`. That file remains unchanged.
 
-### TODO 1 — Implement `ask_question()`
+### 1. Question Retrieval and Answer Generation
 
-Write a function that:
+The `ask_question()` function:
 
 1. Searches the vector store for the 3 most relevant chunks
 2. Combines their text into a context string
@@ -97,13 +97,13 @@ result = llm("some prompt")
 answer = result[0]["generated_text"]
 ```
 
-### TODO 2 — Complete the `main()` interactive loop
+### 2. Interactive CLI
 
-Write a loop that:
+The `main()` function:
 
 1. Builds the knowledge base and loads the LLM (helpers provided)
 2. Takes user input
-3. Calls `ask_question()` and prints the result
+3. Calls ask_question() and prints the response
 4. Exits on `quit`
 
 ---
@@ -133,17 +133,19 @@ pytest tests/ -v
 ## 📁 Project Structure
 
 ```
-langchain-intern-assignment/
+gesture-fs-intern-takehome/
 ├── README.md
 ├── requirements.txt
 ├── data/
 │   ├── services.txt              ← agency service descriptions
 │   ├── pricing.txt               ← packages and pricing
-│   └── faq.txt                   ← client FAQ and process
+│   ├── faq.txt                   ← client FAQ and process
+│   ├── company_handbook.txt      ← company policies and information
+│   └── product_faq.txt           ← product-related FAQ
 ├── src/
 │   ├── __init__.py
 │   ├── knowledge_base.py         ← PRE-BUILT (do not modify)
-│   └── pipeline.py               ← YOUR WORK GOES HERE
+│   └── pipeline.py               ← Q&A response and CLI implementation
 └── tests/
     ├── __init__.py
     └── test_pipeline.py
@@ -168,6 +170,32 @@ langchain-intern-assignment/
 **What Python version?** 3.10+
 
 **Can I modify `knowledge_base.py`?** No.
+
+---
+
+## Bonus Features Implemented
+
+- Handles empty input and missing files
+- Supports `--query` for a single question
+- Includes extra pytest tests
+- Adds type hints to key functions
+
+### Interactive Mode
+
+Start the interactive chatbot:
+
+```bash
+python -m src.pipeline
+```
+Type `quit` to exit.
+
+### Single-Question Mode
+
+Run one question directly from the command line:
+
+```bash
+python -m src.pipeline --query "How much does the Growth package cost?"
+```
 
 ---
 
