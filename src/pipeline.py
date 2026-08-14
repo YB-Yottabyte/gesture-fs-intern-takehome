@@ -14,6 +14,7 @@ Useful docs:
 
 import os
 import argparse
+from typing import Callable
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from src.knowledge_base import build_knowledge_base
 
@@ -22,7 +23,7 @@ REQUIRED_FILES = ["services.txt", "pricing.txt", "faq.txt", "company_handbook.tx
 # ──────────────────────────────────────────────
 # Provided: local LLM (no API key needed)
 # ──────────────────────────────────────────────
-def get_llm():
+def get_llm() -> Callable:
     """Return a callable local LLM using flan-t5-base.
 
     Downloads ~1GB on first run, then cached.
@@ -34,7 +35,7 @@ def get_llm():
     tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-base")
     model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-base")
 
-    def generate(prompt):
+    def generate(prompt: str):
         inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512)
         outputs = model.generate(**inputs, max_new_tokens=150)
         text = tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -57,7 +58,7 @@ Answer:"""
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# TODO 1: Implement ask_question
+# Question retrieval and answer generation
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 def ask_question(vector_store, llm, question: str) -> dict:
     """Retrieve relevant chunks and generate an answer.
@@ -102,9 +103,9 @@ def ask_question(vector_store, llm, question: str) -> dict:
     return {"answer": answer, "sources": sources}
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# TODO 2: Complete the interactive loop
+# CLI setup and interactive Q&A
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-def main():
+def main() -> None:
     """Interactive Q&A loop.
 
     Steps:
@@ -136,7 +137,7 @@ def main():
     llm = get_llm()
 
     # Run single-question mode
-    if args.query:
+    if args.query is not None:
         try:
             response = ask_question(vectorstore, llm, args.query)
         except ValueError as error:
